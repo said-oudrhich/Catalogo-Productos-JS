@@ -1,6 +1,6 @@
 // Array para guardar los productos
 let productos = [];
-console.log("Productos inicial:", productos);
+console.log("Productos inicializados:", productos);
 
 // Referencias a elementos del DOM
 const addBtn = document.getElementById("addBtn");
@@ -11,7 +11,6 @@ const contador = document.getElementById("contador");
 const details = document.getElementById("details");
 const closeDetails = document.getElementById("closeDetails");
 const cancelBtn = document.getElementById("cancel");
-
 console.log("Elementos del DOM cargados:", {
   addBtn,
   modal,
@@ -23,7 +22,7 @@ console.log("Elementos del DOM cargados:", {
 
 // Abrir el modal para añadir un producto
 addBtn.addEventListener("click", () => {
-  console.log("Botón 'Añadir' clickeado");
+  console.log("Botón 'Añadir producto' clickeado");
   form.reset();
   limpiarErrores();
   modal.classList.remove("hidden");
@@ -50,36 +49,50 @@ form.addEventListener("submit", function (e) {
   const precio = document.getElementById("price").value;
   const desc = document.getElementById("desc").value.trim();
   const file = document.getElementById("image").files[0];
-
   console.log("Datos del formulario:", { id, nombre, precio, desc, file });
 
   limpiarErrores();
   let ok = true;
 
-  // Validaciones
+  // Validación del ID
   if (!id) {
-    document.getElementById("err-id").textContent = "El ID es obligatorio";
+    mostrarError("id", "El ID es obligatorio");
     ok = false;
     console.log("Error: ID vacío");
   } else if (productos.some((p) => p.id === id)) {
-    document.getElementById("err-id").textContent = "Ese ID ya existe";
+    mostrarError("id", "Ese ID ya existe");
     ok = false;
     console.log("Error: ID duplicado");
   }
 
+  // Validación del nombre
   if (!nombre) {
+    mostrarError("name", "El nombre es obligatorio");
     ok = false;
     console.log("Error: Nombre vacío");
   }
+
+  // Validación del precio
   if (!precio) {
+    mostrarError("price", "El precio es obligatorio");
     ok = false;
     console.log("Error: Precio vacío");
+  } else if (isNaN(precio) || parseFloat(precio) <= 0) {
+    mostrarError("price", "El precio debe ser un número positivo");
+    ok = false;
+    console.log("Error: Precio inválido");
   }
+
+  // Validación de la descripción
   if (!desc) {
+    mostrarError("desc", "La descripción es obligatoria");
     ok = false;
     console.log("Error: Descripción vacía");
   }
+
+  // Validación de la imagen
   if (!file) {
+    mostrarError("image", "Debes seleccionar una imagen");
     ok = false;
     console.log("Error: Imagen no seleccionada");
   }
@@ -94,7 +107,7 @@ form.addEventListener("submit", function (e) {
   const producto = { id, nombre, precio, desc, imagen: imagenUrl };
   productos.push(producto);
   console.log("Producto añadido:", producto);
-  console.log("Array de productos ahora:", productos);
+  console.log("Array de productos actual:", productos);
 
   añadirTarjeta(producto);
   actualizarContador();
@@ -102,9 +115,24 @@ form.addEventListener("submit", function (e) {
   console.log("Modal cerrado tras añadir producto");
 });
 
+// Función para mostrar errores
+function mostrarError(campo, mensaje) {
+  const input = document.getElementById(campo);
+  const errorSpan = document.getElementById("err-" + campo);
+
+  input.classList.add("input-error");
+  if (errorSpan) {
+    errorSpan.textContent = mensaje;
+  }
+  console.log(`Error en ${campo}: ${mensaje}`);
+}
+
 // Función para limpiar errores
 function limpiarErrores() {
   document.querySelectorAll(".error").forEach((e) => (e.textContent = ""));
+  document.querySelectorAll("input, textarea").forEach((input) => {
+    input.classList.remove("input-error");
+  });
   console.log("Errores limpiados");
 }
 
@@ -119,9 +147,43 @@ function añadirTarjeta(p) {
     <img src="${p.imagen}" alt="${p.nombre}">
     <h3>${p.nombre}</h3>
   `;
-  div.onclick = () => mostrarDetalles(p);
+  div.onclick = () => {
+    console.log("Tarjeta clickeada:", p);
+    mostrarDetalles(p);
+  };
+
+  // Menú contextual para eliminar
+  div.oncontextmenu = (e) => {
+    e.preventDefault();
+    console.log("Intento de eliminar producto:", p);
+    if (confirm(`¿Eliminar el producto "${p.nombre}"?`)) {
+      eliminarProducto(p.id, div);
+    }
+  };
+
   grid.appendChild(div);
   console.log("Tarjeta añadida al grid");
+}
+
+// Eliminar producto
+function eliminarProducto(id, elemento) {
+  productos = productos.filter((p) => p.id !== id);
+  elemento.remove();
+  actualizarContador();
+  console.log(
+    `Producto con ID ${id} eliminado. Productos restantes:`,
+    productos
+  );
+
+  // Si no quedan productos, mostrar mensaje
+  if (productos.length === 0) {
+    grid.innerHTML = `
+      <div class="empty">
+        Todavía no hay productos.<br />Añade el primero pulsando el botón de arriba.
+      </div>
+    `;
+    console.log("No quedan productos en el grid");
+  }
 }
 
 // Mostrar detalles de un producto

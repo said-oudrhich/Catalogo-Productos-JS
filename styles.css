@@ -180,11 +180,27 @@ header h1 {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  transition: border-color 0.3s;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #2980b9;
+}
+
+/* Estilo para campos con error */
+.input-error {
+  border-color: #e74c3c !important;
+  background-color: #ffe6e6 !important;
 }
 
 .error {
-  color: red;
+  color: #e74c3c;
   font-size: 13px;
+  display: block;
+  margin-top: 5px;
+  min-height: 18px;
 }
 
 .buttons {
@@ -205,9 +221,17 @@ header h1 {
   color: white;
 }
 
+#cancel:hover {
+  background: #7f8c8d;
+}
+
 #form button[type="submit"] {
   background: #27ae60;
   color: white;
+}
+
+#form button[type="submit"]:hover {
+  background: #229954;
 }
 
 .hidden {
